@@ -1,0 +1,21 @@
+{
+  "name": "Haroma Keyboard",
+  "short_name": "Haroma",
+  "description": "A custom Hangul keyboard layout.",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#f5f5f5",
+  "theme_color": "#77aa77",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ]
+}
