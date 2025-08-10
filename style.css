@@ -64,7 +64,7 @@ body {
 
 #display-container {     
   width: 320px;
-  height: 150px;
+  height: 200px;
 }
 
 #display {      /* 글자 표시창 */
@@ -180,3 +180,4 @@ button {     /* 숫자,기호,영어,한글... 좌,우,Clear 버튼 */
     font-size: 1.2rem;
 
 }
+
