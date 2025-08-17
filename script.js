@@ -45,14 +45,15 @@ class HaromaKeyboard {
             lastCharInfo: null, 
 			capsLock: false, 
 			scale: 1.0, 
-            rotation: 0, // 1. 회전 상태를 저장할 변수 추가
+            rotation: 0, 
 			activeLayer: 'KR',
+			isQwertyOutput: false,
             isPointerDown: false, 
 			pointerMoved: false, 
 			clickTimeout: null,
             horizontalOffset: 0, 
 			verticalOffset: 0, 
-			pointerOwnerEl: null,
+			pointerOwnerEl: null,			
             dragState: { 
 				isActive: false, 
 				conceptualVowel: null, 
@@ -89,8 +90,7 @@ class HaromaKeyboard {
 	
     init() { 
 		this.loadSettings(); 
-		this.attachEventListeners(); 
-		this.switchLayer('KR'); 
+		this.attachEventListeners();
 	}
 	
     loadSettings() { 
@@ -113,18 +113,18 @@ class HaromaKeyboard {
 		this.applyKeyboardTransform(); 
 	}
 
-    attachEventListeners() {
-        let lastHoveredKey = null;
+	attachEventListeners() {
+		let lastHoveredKey = null;
 		const isInCenter = (x, y) => { 
 			const el = document.elementFromPoint(x, y); 
 			return !!(el && el.closest('.octagon-center')); 
 		};
-        const setupDragListener = (layerName, isEn = false) => {
-            const layer = document.querySelector(`.layer[data-layer="${layerName}"]`);
-            if (!layer) return;
-            const centerOctagon = layer.querySelector('.octagon-center');
-            if (!centerOctagon) return;
-            centerOctagon.addEventListener('pointerdown', e => {
+		const setupDragListener = (layerName, isEn = false) => {
+			const layer = document.querySelector(`.layer[data-layer="${layerName}"]`);
+			if (!layer) return;
+			const centerOctagon = layer.querySelector('.octagon-center');
+			if (!centerOctagon) return;
+			centerOctagon.addEventListener('pointerdown', e => {
 				this.state.tapState.centerPressed = true; 
 				this.state.tapState.longPressFired = false; 
 				this.state.tapState.centerDragHasExited = false;
@@ -136,12 +136,17 @@ class HaromaKeyboard {
 				clearTimeout(this._centerLongTimer);
 				this._centerLongTimer = setTimeout(() => {
 					if (!this.state.dragState.isActive || !this.state.tapState.centerPressed) return;
-					this.insertAtCursor('\n'); 
+					const textToCommit = '\n';
+					if (window.Android && typeof window.Android.sendKeyToNative === 'function') {
+						window.Android.sendKeyToNative(textToCommit);
+					} else {
+						this.insertAtCursor(textToCommit);
+					}
 					this.resetComposition(); 
 					this.state.tapState.longPressFired = true;
 				}, LONG_PRESS_MS);
-                if (this.state.activeLayer !== layerName) return;
-                this.state.dragState = { 
+				if (this.state.activeLayer !== layerName) return;
+				this.state.dragState = { 
 					isActive: true, 
 					conceptualVowel: null, 
 					lastOutput: null, 
@@ -149,104 +154,124 @@ class HaromaKeyboard {
 					startX: e.clientX, 
 					startY: e.clientY 
 				};
-                this.state.pointerMoved = false; 
+				this.state.pointerMoved = false; 
 				lastHoveredKey = centerOctagon; e.preventDefault();
-            });
-        }; 
-		
-        setupDragListener('KR');
-		setupDragListener('KE');
-        setupDragListener('EN', true);
-        setupDragListener('SYM');
-        setupDragListener('NUM');
-		
-        document.addEventListener('pointermove', e => {
+			});
+		}; 
+    
+		setupDragListener('KR');
+		setupDragListener('EN', true);
+		setupDragListener('SYM');
+		setupDragListener('NUM');
+    
+		document.addEventListener('pointermove', e => {
 			const dx = e.clientX - this.state.dragState.startX; 
 			const dy = e.clientY - this.state.dragState.startY; 
 			const movedDist = Math.hypot(dx, dy);
+        
 			if (this.state.dragState.isActive && movedDist > DRAG_THRESHOLD) { 
 				this.flushPendingTap(); 
 			}
 			if (!this.state.dragState.isActive || !this.state.tapState.centerPressed) return;
-            if (!this.state.tapState.centerDragHasExited && !isInCenter(e.clientX, e.clientY)) { 
+			if (!this.state.tapState.centerDragHasExited && !isInCenter(e.clientX, e.clientY)) { 
 				this.state.tapState.centerDragHasExited = true; 
 			}
-            if (movedDist > DRAG_THRESHOLD) { 
+			if (movedDist > DRAG_THRESHOLD) { 
 				clearTimeout(this._centerLongTimer); 
 			}
-            const currentElement = document.elementFromPoint(e.clientX, e.clientY); 
+			const currentElement = document.elementFromPoint(e.clientX, e.clientY); 
 			if (!currentElement) return;
-            const targetKey = currentElement.closest('[data-click]'); 
+			const targetKey = currentElement.closest('[data-click]'); 
 			if (!targetKey || targetKey === lastHoveredKey) return;
-            lastHoveredKey = targetKey;
+			lastHoveredKey = targetKey;
 
-            if (this.state.activeLayer === 'KR' || this.state.activeLayer === 'KE') { // <--- 이렇게 수정
-                if (targetKey.classList.contains('octagon-center')) {
-                    const { conceptualVowel } = this.state.dragState;
-                    if (conceptualVowel) {
-                        const newVowel = this.IOTIZED_VOWEL_MAP[conceptualVowel];
-                        if (newVowel) {this.updateSyllable(newVowel);}
-                    }
-                } else {
-                    const consonant = targetKey.dataset.click;
-                    
-                    if (!this.state.dragState.conceptualVowel) {
-                        const newVowel = this.VOWEL_DRAG_MAP[consonant];
-                        if (newVowel) {this.handleInput(newVowel);}
-                    } else {
-                        const compoundMap = this.COMPOUND_VOWEL_MAP[this.state.dragState.conceptualVowel];
-                        if (compoundMap && compoundMap[consonant]) {
-                            const newVowel = compoundMap[consonant];
-                            this.updateSyllable(newVowel);
-                        }
-                    }
-                }
-            } else if (this.state.activeLayer === 'EN') {
-                if (!targetKey.classList.contains('octagon-center')) {
-                    const keyIdentifier = targetKey.dataset.click; 
+			// --- ▼▼▼ [핵심 수정] KR과 KE 모드 로직을 완전히 통합! ▼▼▼ ---
+			if (this.state.activeLayer === 'KR') {
+				// isQwertyOutput을 여기서 신경 쓸 필요 없이, 항상 한글 조합 로직을 따른다.
+				if (targetKey.classList.contains('octagon-center')) {
+					const { conceptualVowel } = this.state.dragState;
+					if (conceptualVowel) {
+						const newVowel = this.IOTIZED_VOWEL_MAP[conceptualVowel];
+						if (newVowel) { this.updateSyllable(newVowel); }
+					}
+				} else {
+					const consonant = targetKey.dataset.click;
+					if (!this.state.dragState.conceptualVowel) {
+						const newVowel = this.VOWEL_DRAG_MAP[consonant];
+						if (newVowel) { this.handleInput(newVowel); }
+					} else {
+						const compoundMap = this.COMPOUND_VOWEL_MAP[this.state.dragState.conceptualVowel];
+						if (compoundMap && compoundMap[consonant]) {
+							const newVowel = compoundMap[consonant];
+							this.updateSyllable(newVowel);
+						}
+					}
+				}
+			}
+			// --- ▲▲▲ 로직 통합 완료 ▲▲▲ ---
+			else if (this.state.activeLayer === 'EN') {
+				if (!targetKey.classList.contains('octagon-center')) {
+					const keyIdentifier = targetKey.dataset.click; 
 					const charToInput = this.EN_DRAG_MAP[keyIdentifier];
-                    if (charToInput) { 
+					if (charToInput) { 
 						this.handleInput(charToInput); 
 						this.state.dragState.isActive = false; 
 						this.state.tapState.centerPressed = false; 
 					}
-                }
-            }
-        });
+				}
+			}
+		});
 
-        document.addEventListener('pointerup', e => {
+		// pointerup 리스너는 기존과 동일하게 유지
+		document.addEventListener('pointerup', e => {
 			if (!this.state.dragState.isActive) return;
 			if (this.state.tapState.centerPressed) {
-                const dx = e.clientX - this.state.dragState.startX; 
+				const dx = e.clientX - this.state.dragState.startX; 
 				const dy = e.clientY - this.state.dragState.startY; 
 				const movedDist = Math.hypot(dx, dy);
 				clearTimeout(this._centerLongTimer);
 				if (!this.state.tapState.longPressFired) {
 					if (movedDist <= DEAD_ZONE) {
 						const now = Date.now();
-                        const doubleTapAction = () => {
-                            if (this.state.activeLayer === 'SYM') { 
-								this.insertAtCursor('.');
-                            } else if (this.state.activeLayer === 'NUM') { 
-								this.insertAtCursor('0');
-                            } else { 
+						const doubleTapAction = () => {
+							let textToCommit = '.';
+							if (this.state.activeLayer === 'NUM') { 
+								textToCommit = '0';
+							} else { 
 								const cur = this.display.selectionStart; 
 								const hasSpaceBefore = cur > 0 && this.display.value[cur - 1] === ' '; 
-								if (hasSpaceBefore) this.replaceTextBeforeCursor(1, '.'); 
-								else this.insertAtCursor('.'); 
+								if (hasSpaceBefore) {
+									if (window.Android && typeof window.Android.replaceTextBeforeCursor === 'function') {
+										window.Android.replaceTextBeforeCursor(1, '.');
+									} else {
+										this.replaceTextBeforeCursor(1, '.'); 
+									}
+									textToCommit = null;
+								}
 							}
-                            this.resetComposition();
-                        };
-                        const singleTapAction = () => {
-                            let charToInsert = ' '; 
+							if (textToCommit) {
+								if (window.Android && typeof window.Android.sendKeyToNative === 'function') {
+									window.Android.sendKeyToNative(textToCommit);
+								} else {
+									this.insertAtCursor(textToCommit);
+								}
+							}
+							this.resetComposition();
+						};
+						const singleTapAction = () => {
+							let charToInsert = ' '; 
 							if (this.state.activeLayer === 'SYM') { 
 								charToInsert = '?';
-                            } else if (this.state.activeLayer === 'NUM') { 
+							} else if (this.state.activeLayer === 'NUM') { 
 								charToInsert = '5'; 
 							}
-                            this.insertAtCursor(charToInsert); 
+							if (window.Android && typeof window.Android.sendKeyToNative === 'function') {
+								window.Android.sendKeyToNative(charToInsert);
+							} else {
+								this.insertAtCursor(charToInsert);
+							}
 							this.resetComposition();
-                        };
+						};
 						if (now - this.state.tapState.lastTapAt <= DOUBLE_TAP_MS) { 
 							this.cancelPendingTap(); 
 							doubleTapAction(); 
@@ -260,75 +285,74 @@ class HaromaKeyboard {
 							this.state.pendingSingleTap = { timerId, action: singleTapAction }; 
 						}
 					} else {
-                        if (!this.state.tapState.centerDragHasExited && isInCenter(e.clientX, e.clientY)) {
-                            if (this.state.activeLayer === 'SYM') { 
-								this.insertAtCursor(',');
-                            } else if (this.state.activeLayer === 'NUM') { 
-								this.insertAtCursor('0');
-                            } else { 
-								this.insertAtCursor(','); 
+						if (!this.state.tapState.centerDragHasExited && isInCenter(e.clientX, e.clientY)) {
+							let textToCommit = ',';
+							if (this.state.activeLayer === 'NUM') { 
+								textToCommit = '0';
 							}
-                            this.resetComposition();
-                        }
+							if (window.Android && typeof window.Android.sendKeyToNative === 'function') {
+								window.Android.sendKeyToNative(textToCommit);
+							} else {
+								this.insertAtCursor(textToCommit); 
+							}
+							this.resetComposition();
+						}
 					}
 				}
 				this.state.tapState.centerPressed = false;
 			}
 			this.state.dragState.isActive = false;
 		});
-        this.attachRemainingListeners();
-    }
+		this.attachRemainingListeners();
+	}
 
-    updateSyllable(newVowel) {
-        // KE 모드일 때, 이전에 조합된 글자의 QWERTY 문자열 길이를 계산하는 내부 함수
-        const getLastQwertyLength = () => {
-            const last = this.state.lastCharInfo;
-            if (this.state.activeLayer !== 'KE' || !last) return 1; // KE모드가 아니거나 이전 정보 없으면 1 반환
-            
-            let lastHangul = '';
-            // 자음+모음 조합이었던 경우 (예: '가' 상태에서 'ㅣ'를 추가해 '개'로 바꿀 때)
-            if (last.type === 'CV') {
-                lastHangul = this.combineCode(last.cho, last.jung);
-            // 모음만 있던 경우 (예: 'ㅏ' 상태에서 iotize하여 'ㅑ'로 바꿀 때)
-            } else {
-                lastHangul = this.state.dragState.conceptualVowel || '';
-            }
-            return this.convertToQwerty(lastHangul).length || 1;
-        };
-
-        // 자음+모음이 결합된 상태에서 모음이 변경될 경우 (예: '고' -> '과')
-        if (this.state.lastCharInfo && this.state.lastCharInfo.type === 'CV') {
-            const cho = this.state.lastCharInfo.cho;
-            const newChar = this.combineCode(cho, newVowel);
-            
-            // KE 모드인지 확인하여 최종 출력 문자 결정
-            const finalText = this.state.activeLayer === 'KE' ? this.convertToQwerty(newChar) : newChar;
-            const removeLength = getLastQwertyLength();
-            
-            this.replaceTextBeforeCursor(removeLength, finalText);
-            this.state.lastCharInfo = { type: 'CV', cho: cho, jung: newVowel };
-
-        // 모음만 단독으로 변경될 경우 (예: 'ㅏ' -> 'ㅑ')
-        } else {
-            // KE 모드인지 확인하여 최종 출력 문자 결정
-            const finalText = this.state.activeLayer === 'KE' ? this.convertToQwerty(newVowel) : newVowel;
-            const removeLength = getLastQwertyLength();
-            
-            this.replaceTextBeforeCursor(removeLength, finalText);
-            this.resetComposition();
-        }
+	updateSyllable(newVowel) {
+		// KE 모드일 때, 이전에 조합된 글자의 QWERTY 문자열 길이를 계산하는 내부 함수
+		const getLastQwertyLength = () => {
+			const last = this.state.lastCharInfo;
+			// [수정] 'KE'가 아닌 isQwertyOutput을 확인
+			if (!this.state.isQwertyOutput || !last) return 1; 
         
-        // 현재 조합된 모음을 상태에 저장
-        this.state.dragState.conceptualVowel = newVowel;
-    }
+			let lastHangul = '';
+			if (last.type === 'CV') {
+				lastHangul = this.combineCode(last.cho, last.jung);
+			} else {
+				lastHangul = this.state.dragState.conceptualVowel || '';
+			}
+			return this.convertToQwerty(lastHangul).length || 1;
+		};
+
+		// 자음+모음이 결합된 상태에서 모음이 변경될 경우 (예: '고' -> '과')
+		if (this.state.lastCharInfo && this.state.lastCharInfo.type === 'CV') {
+			const cho = this.state.lastCharInfo.cho;
+			const newChar = this.combineCode(cho, newVowel);
+        
+			// [수정] 'KE'가 아닌 isQwertyOutput을 확인
+			const finalText = this.state.isQwertyOutput ? this.convertToQwerty(newChar) : newChar;
+			const removeLength = getLastQwertyLength();
+        
+			this.replaceTextBeforeCursor(removeLength, finalText);
+			this.state.lastCharInfo = { type: 'CV', cho: cho, jung: newVowel };
+
+		// 모음만 단독으로 변경될 경우 (예: 'ㅏ' -> 'ㅑ')
+		} else {
+			// [수정] 'KE'가 아닌 isQwertyOutput을 확인
+			const finalText = this.state.isQwertyOutput ? this.convertToQwerty(newVowel) : newVowel;
+			const removeLength = getLastQwertyLength();
+        
+			this.replaceTextBeforeCursor(removeLength, finalText);
+			this.resetComposition();
+		}
+    
+		// 현재 조합된 모음을 상태에 저장
+		this.state.dragState.conceptualVowel = newVowel;
+	}
 
     handleInput(char) {
     if (typeof char !== 'string' || !char.trim() && char !== ' ') return;
     const isHangulComponent = this.CHOSUNG.includes(char) || this.JUNGSUNG.includes(char);
-    // ===== ▼▼▼ 이 부분을 수정하세요 ▼▼▼ =====
-    if ((this.state.activeLayer === 'KR' || this.state.activeLayer === 'KE') && isHangulComponent) {
-    // ===== ▲▲▲ 수정 완료 ▲▲▲ =====
-        this.composeHangul(char);
+    if (this.state.activeLayer === 'KR' && isHangulComponent) {
+		this.composeHangul(char);
     } else {
         this.resetComposition();
         let charToInsert = char;
@@ -345,7 +369,6 @@ class HaromaKeyboard {
 		const isJungsung = this.JUNGSUNG.includes(char);
 		if (this.display.selectionStart !== this.display.selectionEnd) this.resetComposition();
 
-		// KE 모드일 때, 이전에 조합된 글자의 QWERTY 문자열 길이를 계산하는 함수
 		const getLastQwertyLength = () => {
 			if (!last) return 0;
 			let lastHangul = '';
@@ -357,77 +380,81 @@ class HaromaKeyboard {
 		};
 
 		if (isChosung) {
-			// 경우 1: 중성이 입력된 상태에서 종성으로 자음이 추가될 때 (예: '가' + 'ㄱ' -> '각')
+			// 경우 1: '가' + 'ㄱ' -> '각'
 			if (last && last.type === 'CV' && this.JONGSUNG.includes(char)) {
 				const newChar = this.combineCode(last.cho, last.jung, char);
-				const finalText = this.state.activeLayer === 'KE' ? this.convertToQwerty(newChar) : newChar;
-				const removeLength = this.state.activeLayer === 'KE' ? getLastQwertyLength() : 1;
+				const finalText = this.state.isQwertyOutput ? this.convertToQwerty(newChar) : newChar; // <--- 확인 완료
+				const removeLength = this.state.isQwertyOutput ? getLastQwertyLength() : 1;
             
 				this.replaceTextBeforeCursor(removeLength, finalText);
 				this.state.lastCharInfo = { type: 'CVJ', cho: last.cho, jung: last.jung, jong: char };
-        
-			// 경우 2: 홑받침이 있는 상태에서 겹받침이 될 때 (예: '각' + 'ㅅ' -> '값')
+    
+			// 경우 2: '각' + 'ㅅ' -> '값'
 			} else if (last && last.type === 'CVJ' && this.DOUBLE_FINAL[last.jong + char]) {
 				const newJong = this.DOUBLE_FINAL[last.jong + char];
 				const newChar = this.combineCode(last.cho, last.jung, newJong);
-				const finalText = this.state.activeLayer === 'KE' ? this.convertToQwerty(newChar) : newChar;
-				const removeLength = this.state.activeLayer === 'KE' ? getLastQwertyLength() : 1;
+				const finalText = this.state.isQwertyOutput ? this.convertToQwerty(newChar) : newChar; // <--- 확인 완료
+				const removeLength = this.state.isQwertyOutput ? getLastQwertyLength() : 1;
 
 				this.replaceTextBeforeCursor(removeLength, finalText);
 				this.state.lastCharInfo = { type: 'CVJ', cho: last.cho, jung: last.jung, jong: newJong };
-        
-			// 경우 3: 새로운 글자가 시작될 때 (예: '가' 입력 후 'ㄴ' 입력)
+    
+			// 경우 3: 새로운 글자 시작
 			} else {
 				this.resetComposition();
-				const finalText = this.state.activeLayer === 'KE' ? this.convertToQwerty(char) : char;
+				// [수정됨] newChar가 아닌 char를 사용해야 함
+				const finalText = this.state.isQwertyOutput ? this.convertToQwerty(char) : char; 
 				this.insertAtCursor(finalText);
 				this.state.lastCharInfo = { type: 'C', cho: char };
 				this.state.dragState.conceptualVowel = null;
 			}
 		} else if (isJungsung) {
-			// 경우 1: 모음이 합쳐져 겹모음이 될 때 (예: 'ㅗ' + 'ㅏ' -> 'ㅘ')
+			// 경우 1: 'ㅗ' + 'ㅏ' -> 'ㅘ'
 			if (last && (last.type === 'V' || last.type === 'CV') && this.COMPLEX_VOWEL[last.jung + char]) {
 				const newVowel = this.COMPLEX_VOWEL[last.jung + char];
 				if (last.type === 'CV') {
 					const newChar = this.combineCode(last.cho, newVowel);
-					const finalText = this.state.activeLayer === 'KE' ? this.convertToQwerty(newChar) : newChar;
-					const removeLength = this.state.activeLayer === 'KE' ? getLastQwertyLength() : 1;
+					const finalText = this.state.isQwertyOutput ? this.convertToQwerty(newChar) : newChar; // <--- 확인 완료
+					const removeLength = this.state.isQwertyOutput ? getLastQwertyLength() : 1;
 					this.replaceTextBeforeCursor(removeLength, finalText);
 					this.state.lastCharInfo = { type: 'CV', cho: last.cho, jung: newVowel };
 				} else { // last.type === 'V'
-					const finalText = this.state.activeLayer === 'KE' ? this.convertToQwerty(newVowel) : newVowel;
-					const removeLength = this.state.activeLayer === 'KE' ? getLastQwertyLength() : 1;
+					// [수정됨] isQwertyOutput을 사용하도록 변경
+					const finalText = this.state.isQwertyOutput ? this.convertToQwerty(newVowel) : newVowel;
+					const removeLength = this.state.isQwertyOutput ? getLastQwertyLength() : 1;
 					this.replaceTextBeforeCursor(removeLength, finalText);
 					this.state.lastCharInfo = { type: 'V', jung: newVowel };
 				}
-			// 경우 2: 자음 뒤에 모음이 올 때 (예: 'ㄱ' + 'ㅏ' -> '가')
+			// 경우 2: 'ㄱ' + 'ㅏ' -> '가'
 			} else if (last && last.type === 'C') {
 				const newChar = this.combineCode(last.cho, char);
-				const finalText = this.state.activeLayer === 'KE' ? this.convertToQwerty(newChar) : newChar;
-				const removeLength = this.state.activeLayer === 'KE' ? getLastQwertyLength() : 1;
+				const finalText = this.state.isQwertyOutput ? this.convertToQwerty(newChar) : newChar; // <--- 확인 완료
+				const removeLength = this.state.isQwertyOutput ? getLastQwertyLength() : 1;
 				this.replaceTextBeforeCursor(removeLength, finalText);
 				this.state.lastCharInfo = { type: 'CV', cho: last.cho, jung: char };
 
-			// 경우 3: 받침이 있는 글자 뒤에 모음이 올 때 (예: '값' + 'ㅏ' -> '가바')
+			// 경우 3: '값' + 'ㅏ' -> '가바'
 			} else if (last && last.type === 'CVJ') {
 				const doubleJong = this.REVERSE_DOUBLE_FINAL[last.jong];
 				let char1, char2;
-				if (doubleJong) { // 겹받침 분리
+				if (doubleJong) {
 					char1 = this.combineCode(last.cho, last.jung, doubleJong[0]);
 					char2 = this.combineCode(doubleJong[1], char);
 					this.state.lastCharInfo = { type: 'CV', cho: doubleJong[1], jung: char };
-				} else { // 홑받침 분리
+				} else {
 					char1 = this.combineCode(last.cho, last.jung);
 					char2 = this.combineCode(last.jong, char);
 					this.state.lastCharInfo = { type: 'CV', cho: last.jong, jung: char };
 				}
-				const finalText = this.state.activeLayer === 'KE' ? this.convertToQwerty(char1 + char2) : (char1 + char2);
-				const removeLength = this.state.activeLayer === 'KE' ? getLastQwertyLength() : 1;
+				// [수정됨] isQwertyOutput을 사용하도록 변경
+				const finalText = this.state.isQwertyOutput ? this.convertToQwerty(char1 + char2) : (char1 + char2);
+				const removeLength = this.state.isQwertyOutput ? getLastQwertyLength() : 1;
 				this.replaceTextBeforeCursor(removeLength, finalText);
-			// 경우 4: 새로운 모음만 입력될 때
+			// 경우 4: 새로운 모음만 입력
 			} else {
 				this.resetComposition();
-				const finalText = this.state.activeLayer === 'KE' ? this.convertToQwerty(char) : char;
+				// [수정됨] newChar가 아닌 char를 사용해야 함
+				const finalText = this.state.isQwertyOutput ? this.convertToQwerty(char) : char;
 				this.insertAtCursor(finalText);
 				this.state.lastCharInfo = { type: 'V', jung: char };
 			}
@@ -802,43 +829,79 @@ class HaromaKeyboard {
 		}); 
 	}
 	
-    switchLayer(layerName) { 
-		this.flushPendingTap(); 
-		if (layerName === 'EN') { 
-			if (this.state.activeLayer === 'EN') { 
-				this.state.capsLock = !this.state.capsLock; 
-			} else { 
-				this.state.capsLock = false; 
+    switchLayer(layerName) {
+		this.flushPendingTap();
+
+		// --- 새로운 로직 시작 ---
+
+		// 1. 'K' 버튼을 눌렀을 때
+		if (layerName === 'KR') {
+			// 이미 KR 레이어 상태라면, KE 모드를 켜고 끈다.
+			if (this.state.activeLayer === 'KR') {
+				this.state.isQwertyOutput = !this.state.isQwertyOutput;
 			} 
-		} else { 
-			this.state.capsLock = false; 
+			// 다른 레이어에서 KR 레이어로 온 것이라면, KE 모드는 끈다.
+			else {
+				this.state.activeLayer = 'KR';
+				this.state.isQwertyOutput = false;
+			}
 		} 
-		this.state.activeLayer = layerName; 
-		this.resetComposition(); 
-		
-		document.querySelectorAll('.layer').forEach(div => { 
-			div.classList.toggle('active', div.dataset.layer === layerName); 
-		}); 
-		
-		this.layerButtons.forEach(btn => { 
-			btn.classList.toggle('active', btn.dataset.layer === layerName); 
-		}); 
-		
-		const enButton = document.querySelector('button[data-layer="EN"]'); 
-		if (enButton) { 
-			enButton.classList.toggle('caps-on', this.state.capsLock); 
+		// 2. 'E' 버튼을 눌렀을 때
+		else if (layerName === 'EN') {
+			// 이미 EN 레이어 상태라면, Caps Lock 모드를 켜고 끈다.
+			if (this.state.activeLayer === 'EN') {
+				this.state.capsLock = !this.state.capsLock;
+			} 
+			// 다른 레이어에서 EN 레이어로 온 것이라면, Caps Lock은 끈다.
+			else {
+				this.state.activeLayer = 'EN';
+				this.state.capsLock = false;
+			}
 		} 
-		this.updateEnKeyCaps(); 
-		this.state.dragState = { 
-			isActive:false, 
-			conceptualVowel:null, 
-			lastOutput:null, 
-			isEnDrag:false, 
-			startX:0, 
-			startY:0,
-		}; 
-		this.state.tapState.centerPressed = false; 
-		clearTimeout(this._centerLongTimer); 
+		// 3. 그 외 다른 레이어 버튼을 눌렀을 때
+		else {
+			this.state.activeLayer = layerName;
+			// 다른 레이어로 전환 시, 특수 모드들은 항상 초기화한다.
+			this.state.isQwertyOutput = false;
+			this.state.capsLock = false;
+		}
+
+		// --- UI 업데이트 시작 ---
+
+		this.resetComposition();
+
+		// 활성 레이어 UI 업데이트
+		document.querySelectorAll('.layer').forEach(div => {
+			div.classList.toggle('active', div.dataset.layer === this.state.activeLayer);
+		});
+
+		// 하단 버튼들 UI 업데이트
+		this.layerButtons.forEach(btn => {
+			btn.classList.remove('active', 'caps-on', 'qwerty-on'); // 모든 특수 상태 초기화
+        
+			// 현재 활성화된 레이어에 해당하는 버튼에 'active' 클래스 추가
+			if (btn.dataset.layer === this.state.activeLayer) {
+				btn.classList.add('active');
+			}
+		});
+    
+		// 특수 모드 버튼 UI 업데이트
+		const enButton = document.querySelector('button[data-layer="EN"]');
+		if (enButton && this.state.capsLock) {
+			enButton.classList.add('caps-on');
+		}
+
+		const krButton = document.querySelector('button[data-layer="KR"]');
+		if (krButton && this.state.isQwertyOutput) {
+			krButton.classList.add('qwerty-on');
+			// KE 모드가 켜지면, K 버튼은 active 상태는 아니도록 보이게 처리
+			krButton.classList.remove('active'); 
+		}
+
+		this.updateEnKeyCaps();
+		this.state.dragState = { isActive: false, conceptualVowel: null, lastOutput: null, isEnDrag: false, startX: 0, startY: 0, };
+		this.state.tapState.centerPressed = false;
+		clearTimeout(this._centerLongTimer);
 	}
 	
     openSettings() { 

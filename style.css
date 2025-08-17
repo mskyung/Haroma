@@ -6,6 +6,9 @@ body {
   background-color: #f5f5f5;
   font-family: arial;  
   padding-bottom: 100px;  /* 컨트롤 버튼이 다른 콘텐츠를 가리지 않도록 body에 하단 여백 추가 */
+  /* 추가: 터치 동작 시 부드러운 스크롤링과 같은 기본 동작을 막기 위함 */
+  touch-action: none; 
+  user-select: none;
 }
 
 :root {
@@ -24,7 +27,11 @@ body {
   bottom: 2px; /* 화면 하단에서의 여백 */
   left: 50%;
   transform: translateX(-50%); /* 수평 중앙 정렬 */
-  width: 320px;     /* 전체 컨테이너 너비 지정 */
+  
+  /* [수정됨] 뷰포트 너비의 95%를 사용하되, 너무 커지는 것을 방지하기 위해 최대 너비 설정 */
+  width: 95vw;
+  max-width: 450px; 
+
   display: flex;
   flex-direction: column; /* 자식 요소(줄)들을 세로로 정렬 */
   align-items: center;   /* 가운데 정렬 */
@@ -65,18 +72,28 @@ body {
   color: white;
 }
 
+#layer-switcher button.qwerty-on {   /* K 버튼이 KE 모드일 때 적용될 스타일 */
+  background-color: #4a90e2;      /* 파란색으로 변경 (Caps Lock과 동일) */
+  border-color: #4a90e2;
+  color: white;
+}
+
+/* [수정됨] 웹 테스트를 위한 디스플레이 컨테이너. 키보드 앱에서는 이 부분이 필요 없을 수 있음. */
 #display-container {     
-  width: 320px;
-  height: 200px;
+  width: 95vw;
+  max-width: 450px;
+  height: 150px; /* 높이 약간 줄임 */
+  margin-top: 10px;
 }
 
 #display {      /* 글자 표시창 */
-  width: 97%;
+  width: 100%; /* 부모 컨테이너에 꽉 차게 변경 */
   height: 100%;
   font-size: 18px;
   background-color: #f0f0f0;
   border-radius: 5px;
   overflow-y: auto;
+  box-sizing: border-box; /* 패딩, 보더가 너비/높이에 포함되도록 설정 */
 }
 
 #haromaInput[readonly] {
@@ -85,14 +102,17 @@ body {
 
 #keyboard-container {
   display: block;
-  bottom: 115px; /* 기능 버튼 높이(85px) + 기능 버튼 하단 여백(10px) + 추가 여백(20px) = 115px */
+  bottom: 115px;
   left: 50%;
   margin-bottom: 2px;
-  transform-origin: bottom;   /* transform-origin을 'bottom'으로 변경하여 중앙에서 확대/축소되도록 함 */
+  transform-origin: bottom;
   transition: transform 0.1s ease-in-out;  
-  position: relative;      /* 위치 이동을 위해 position 속성 추가 */
+  position: relative;
   touch-action: none;
   user-select: none;
+  /* [추가됨] 키보드 컨테이너의 너비를 여기서 제어 */
+  width: 90vw; /* 화면 너비의 90% */
+  max-width: 400px; /* 태블릿 등에서 너무 커지지 않게 제한 */
 }
 
 svg {
@@ -100,9 +120,11 @@ svg {
   height: 100%;
 }
 
-.keyboard {    /* 입력용 키보드 */
-    width: 300px;
-    height: 300px;
+.keyboard {
+    /* [수정됨] 너비와 높이를 1:1 비율로 유지하기 위한 트릭 */
+    width: 100%;
+    height: auto; /* 높이는 자동으로 조절 */
+    aspect-ratio: 1 / 1; /* 가로:세로 비율을 1:1로 강제 */
     border-radius: 2px;
 }
 
@@ -113,6 +135,7 @@ button {     /* 숫자,기호,영어,한글... 좌,우,Clear 버튼 */
   font-size: 1rem;
 }
 
+/* ... (나머지 .octagon, .modal 등 스타일은 그대로 유지) ... */
 .octagon-center {
   fill: #6cbf72; 
   stroke: #144455; 
