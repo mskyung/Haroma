@@ -45,6 +45,7 @@ class HaromaKeyboard {
             lastCharInfo: null, 
 			capsLock: false, 
 			scale: 1.0, 
+            rotation: 0, // 1. 회전 상태를 저장할 변수 추가
 			activeLayer: 'KR',
             isPointerDown: false, 
 			pointerMoved: false, 
@@ -104,6 +105,11 @@ class HaromaKeyboard {
 		if (savedVerticalOffset) { 
 			this.state.verticalOffset = parseInt(savedVerticalOffset, 10); 
 		} 
+        // 2. 페이지 로드 시 저장된 회전 각도 불러오기
+        const savedRotation = localStorage.getItem('keyboardRotation');
+        if (savedRotation) {
+            this.state.rotation = parseInt(savedRotation, 10);
+        }
 		this.applyKeyboardTransform(); 
 	}
 
@@ -577,6 +583,11 @@ class HaromaKeyboard {
 		document.getElementById('hand-right').addEventListener('click', () => this.moveKeyboard(10)); 
 		document.getElementById('position-up').addEventListener('click', () => this.moveKeyboardVertical(-10)); 
 		document.getElementById('position-down').addEventListener('click', () => this.moveKeyboardVertical(10)); 
+        
+        // 5. 회전 버튼에 이벤트 리스너 추가
+        document.getElementById('rotate-left').addEventListener('click', () => this.rotateKeyboard(-1));
+        document.getElementById('rotate-right').addEventListener('click', () => this.rotateKeyboard(1));
+
 		document.getElementById('settings-btn').addEventListener('click', () => this.openSettings()); 
 		document.querySelector('.close-button').addEventListener('click', () => this.closeSettings()); 
 		window.addEventListener('click', (event) => { 
@@ -763,7 +774,8 @@ class HaromaKeyboard {
 		const scale = `scale(${this.state.scale})`; 
 		const translateX = `translateX(-50%)`; 
 		const translateY = `translateY(${this.state.verticalOffset}px)`; 
-		this.keyboardContainer.style.transform = `${translateY} ${translateX} ${scale}`; 
+        const rotate = `rotate(${this.state.rotation}deg)`; // 3. CSS transform에 rotate 추가
+		this.keyboardContainer.style.transform = `${translateY} ${translateX} ${scale} ${rotate}`; // rotate 적용
 	}
 	
     moveKeyboardVertical(direction) { 
@@ -771,6 +783,13 @@ class HaromaKeyboard {
 		this.applyKeyboardTransform(); 
 		localStorage.setItem('keyboardVerticalOffset', this.state.verticalOffset); 
 	}
+
+    // 4. 키보드를 회전시키는 함수 새로 추가
+    rotateKeyboard(degrees) {
+        this.state.rotation += degrees;
+        this.applyKeyboardTransform();
+        localStorage.setItem('keyboardRotation', this.state.rotation);
+    }
 	
     updateEnKeyCaps() { 
 		const isCaps = this.state.capsLock; 
