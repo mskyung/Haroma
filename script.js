@@ -832,15 +832,14 @@ class HaromaKeyboard {
     switchLayer(layerName) {
 		this.flushPendingTap();
 
-		// --- 새로운 로직 시작 ---
+		// --- ▼▼▼ 핵심 수정 부분 ▼▼▼ ---
 
 		// 1. 'K' 버튼을 눌렀을 때
 		if (layerName === 'KR') {
-			// 이미 KR 레이어 상태라면, KE 모드를 켜고 끈다.
+			this.state.capsLock = false; // K 모드로 전환 시, Caps Lock 모드는 항상 끄도록 추가
 			if (this.state.activeLayer === 'KR') {
 				this.state.isQwertyOutput = !this.state.isQwertyOutput;
 			} 
-			// 다른 레이어에서 KR 레이어로 온 것이라면, KE 모드는 끈다.
 			else {
 				this.state.activeLayer = 'KR';
 				this.state.isQwertyOutput = false;
@@ -848,11 +847,10 @@ class HaromaKeyboard {
 		} 
 		// 2. 'E' 버튼을 눌렀을 때
 		else if (layerName === 'EN') {
-			// 이미 EN 레이어 상태라면, Caps Lock 모드를 켜고 끈다.
+			this.state.isQwertyOutput = false; // E 모드로 전환 시, KE 모드는 항상 끄도록 추가
 			if (this.state.activeLayer === 'EN') {
 				this.state.capsLock = !this.state.capsLock;
 			} 
-			// 다른 레이어에서 EN 레이어로 온 것이라면, Caps Lock은 끈다.
 			else {
 				this.state.activeLayer = 'EN';
 				this.state.capsLock = false;
@@ -861,31 +859,27 @@ class HaromaKeyboard {
 		// 3. 그 외 다른 레이어 버튼을 눌렀을 때
 		else {
 			this.state.activeLayer = layerName;
-			// 다른 레이어로 전환 시, 특수 모드들은 항상 초기화한다.
 			this.state.isQwertyOutput = false;
 			this.state.capsLock = false;
 		}
 
-		// --- UI 업데이트 시작 ---
+		// --- ▲▲▲ 수정 완료 ▲▲▲ ---
 
+		// --- UI 업데이트 부분 (기존과 동일하지만 중요해서 포함) ---
 		this.resetComposition();
 
-		// 활성 레이어 UI 업데이트
 		document.querySelectorAll('.layer').forEach(div => {
 			div.classList.toggle('active', div.dataset.layer === this.state.activeLayer);
 		});
 
-		// 하단 버튼들 UI 업데이트
 		this.layerButtons.forEach(btn => {
-			btn.classList.remove('active', 'caps-on', 'qwerty-on'); // 모든 특수 상태 초기화
+			btn.classList.remove('active', 'caps-on', 'qwerty-on');
         
-			// 현재 활성화된 레이어에 해당하는 버튼에 'active' 클래스 추가
 			if (btn.dataset.layer === this.state.activeLayer) {
 				btn.classList.add('active');
 			}
 		});
     
-		// 특수 모드 버튼 UI 업데이트
 		const enButton = document.querySelector('button[data-layer="EN"]');
 		if (enButton && this.state.capsLock) {
 			enButton.classList.add('caps-on');
@@ -894,7 +888,6 @@ class HaromaKeyboard {
 		const krButton = document.querySelector('button[data-layer="KR"]');
 		if (krButton && this.state.isQwertyOutput) {
 			krButton.classList.add('qwerty-on');
-			// KE 모드가 켜지면, K 버튼은 active 상태는 아니도록 보이게 처리
 			krButton.classList.remove('active'); 
 		}
 
