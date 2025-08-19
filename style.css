@@ -25,14 +25,14 @@ body {
 #display-container {     
   width: 95vw;
   max-width: 450px;
-  height: 150px;
+  height: 300px;
   margin-top: 10px;
 }
 
 #display {
   width: 100%;
   height: 100%;
-  font-size: 18px;
+  font-size: 30px;
   background-color: #f0f0f0;
   border-radius: 5px;
   overflow-y: auto;
@@ -96,7 +96,7 @@ svg.keyboard {
 
 /* 모음 영역 버튼 */
 .octagon-center {
-  fill: #6cbf72; 
+  fill: #5bd95b;   /* #5bd95b #525753   */
   stroke: #144455; 
   stroke-width: 0.5;
 }
@@ -104,7 +104,7 @@ svg.keyboard {
 /* 자음 영역 버튼 */
 .octagon-small1, .octagon-small2, .octagon-small3, .octagon-small4, 
 .octagon-small5, .octagon-small6, .octagon-small7, .octagon-small8 {
-  fill: #83d691;    /* 이제 이 색상은 자음 영역에만 적용돼! #c7fcc7 #abd4ab  */ 
+  fill: #c7fcc7;    /* 이제 이 색상은 자음 영역에만 적용돼! #c7fcc7 #abd4ab #2cdb32 */ 
   stroke: #144455; 
   stroke-width: 0.5;
 }
@@ -112,20 +112,20 @@ svg.keyboard {
 /* 기능영역 버튼 */
 .octagon-big1, .octagon-big2, .octagon-big3, .octagon-big4, 
 .octagon-big5, .octagon-big6, .octagon-big7, .octagon-big8 {
-  fill: #fafcfa;   /* 색상 변경 */
+  fill: #ededed;   /* 색상 변경   #fafcfa */
   stroke: #144455;  
   stroke-width: 0.5;
 }
 
 /* 기능영역 버튼 중 현재 활성화된 모드 버튼 색상 */
 polygon[data-layer].active {
-  fill: #dbdbdb;   /*var(--key-center-color);   #77aa77 */
+  fill: #b6b8b6;   /*var(--key-center-color);   #77aa77 */
 }
 
 /* Caps Lock 또는 KE 모드일 때 버튼 색상 (파란색) */
 polygon[data-layer].caps-on,
 polygon[data-layer].qwerty-on {
-  fill: #aeafb0;   /* Blue color  #4a90e2 */
+  fill: #6297e3;   /* Blue color  #4a90e2 */
 }
 
 /* Modal styles remain the same */
