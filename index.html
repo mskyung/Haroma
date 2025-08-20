@@ -15,21 +15,21 @@
 <div id="keyboard-container">
     <div class="keyboard-layout-wrapper">
         <svg class="keyboard-shell" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-            <polygon class="octagon-big8" copy-btn" points="16,16 24.5,24.5 35,14 30,2"></polygon>
+            <polygon class="octagon-big8 copy-btn" points="16,16 24.5,24.5 35,14 30,2"></polygon>  <!-- 기능버튼은 "octagon-big8 copy-btn" 따옴표 주의 -->
             <text x="26" y="16" font-size="5" text-anchor="middle" fill="black" pointer-events="none">Copy</text>
             <polygon class="octagon-big8 refresh-btn" points="24.5,24.5 16,16 2,30 14,35"></polygon>
             <text x="13.5" y="29" font-size="5" text-anchor="middle" fill="black" pointer-events="none">Clear</text>
-            <polygon class="octagon-big1" settings-btn" points="75.5,24.5 65,14 70,2 84,16"></polygon>
+            <polygon class="octagon-big1 settings-btn" points="75.5,24.5 65,14 70,2 84,16"></polygon>
             <text x="74.5" y="18" font-size="9" text-anchor="middle" fill="black" pointer-events="none">☼</text>
-            <polygon class="octagon-big1" cursor-right" points="84,16 75.5,24.5 86,35 98,30"></polygon>
+            <polygon class="octagon-big1 cursor-right" points="84,16 75.5,24.5 86,35 98,30"></polygon>
             <text x="85" y="29" font-size="8" text-anchor="middle" fill="black" pointer-events="none">→|</text>
-            <polygon class="octagon-big7" delete-btn" points="86,50 86,35 98,30 98,50"></polygon>
+            <polygon class="octagon-big7 delete-btn" points="86,50 86,35 98,30 98,50"></polygon>
 			<text x="92" y="45" font-size="9" text-anchor="middle" fill="black" pointer-events="none">⌦</text>
             <polygon class="octagon-big7 backspace" points="86,65 86,50 98,50 98,70"></polygon>
             <text x="92" y="61" font-size="9" text-anchor="middle" fill="black" pointer-events="none">⌫</text>
             <polygon class="octagon-big4 cursor-left" points="84,84 75.5,75.5 86,65 98,70"></polygon>
             <text x="88" y="76" font-size="8" text-anchor="middle" fill="black" pointer-events="none">|←</text>
-            <polygon class="octagon-big4" data-layer="KR" points="84,84 75.5,75.5 65,86 70,98"></polygon>
+            <polygon class="octagon-big4" data-layer="KR" points="84,84 75.5,75.5 65,86 70,98"></polygon>     <!-- 레이어버튼은 "octagon-big4" data-layer="KR" 따옴표 주의 -->
             <text x="74" y="89" font-size="6" text-anchor="middle" fill="white" pointer-events="none">K</text>
             <polygon class="octagon-big5" data-layer="SYM" points="35,86 50,86 50,98 30,98"></polygon>
             <text x="42" y="95" font-size="6" text-anchor="middle" fill="white" pointer-events="none">S</text>
@@ -47,8 +47,7 @@
 			<text x="58" y="10" font-size="6" text-anchor="middle" fill="black" pointer-events="none"></text>			
             <polygon class="octagon-big6" points="30,2 50,2 50,14 35,14"></polygon>
 			<text x="42" y="10" font-size="6" text-anchor="middle" fill="black" pointer-events="none"></text>
-			
-        </svg>
+		</svg>
 
         <div class="keyboard-layers">
             <div class="layer active" data-layer="KR">
