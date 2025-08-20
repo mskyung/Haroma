@@ -259,7 +259,7 @@ class HaromaKeyboard {
 						const singleTapAction = () => {
 							let charToInsert = ' '; 
 							if (this.state.activeLayer === 'SYM') { 
-								charToInsert = '?';
+								charToInsert = ' ';
 							} else if (this.state.activeLayer === 'NUM') { 
 								charToInsert = '5'; 
 							}
