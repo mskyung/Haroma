@@ -193,15 +193,17 @@ polygon[data-layer].one-time-caps-on {
 }
 
 .rotate-left {
-font-size: 4em; / 아이콘 크기 조절 */
+font-size: 1.5em; / 아이콘 크기 조절 */
 }
 
 .rotate-right {
-font-size: 4em; / 아이콘 크기 조절 */
+font-size: 1.5em; / 아이콘 크기 조절 */
 }
 
 .manual-content {
     padding: 0 10px; /* 좌우 여백 */
+    max-height: 50vh;  /* Add this line to limit the height */
+    overflow-y: auto;  /* Add this line to enable scrolling */
 }
 
 .manual-content h4 {
