@@ -1,3 +1,9 @@
+:root {
+  --vowel-area-color: #5bd95b;
+  --consonant-area-color: #c7fcc7;
+  --function-area-color: #ededed;
+}
+
 body {
   display: flex;
   flex-direction: column; /* 가로 → 세로 정렬 */
@@ -60,8 +66,6 @@ body {
     height: 100%;
 }
 
-/* --- ▼▼▼ THIS IS THE FIX ▼▼▼ --- */
-
 .keyboard-layers {
     position: absolute;
     top: 0;
@@ -87,8 +91,6 @@ body {
     pointer-events: auto;
 }
 
-/* --- ▲▲▲ FIX ENDS HERE ▲▲▲ --- */
-
 svg.keyboard {
     background: transparent;
     width: 100%;
@@ -97,7 +99,7 @@ svg.keyboard {
 
 /* 모음 영역 버튼 */
 .octagon-center {
-  fill: #5bd95b;   /* #5bd95b #525753   */
+  fill: var(--vowel-area-color); /* #5bd95b를 변수로 교체 */
   stroke: #144455; 
   stroke-width: 0.5;
 }
@@ -105,7 +107,7 @@ svg.keyboard {
 /* 자음 영역 버튼 */
 .octagon-small1, .octagon-small2, .octagon-small3, .octagon-small4, 
 .octagon-small5, .octagon-small6, .octagon-small7, .octagon-small8 {
-  fill: #c7fcc7;    /* 이제 이 색상은 자음 영역에만 적용돼! #c7fcc7 #abd4ab #2cdb32 */ 
+  fill: var(--consonant-area-color); /* #c7fcc7를 변수로 교체 */
   stroke: #144455; 
   stroke-width: 0.5;
 }
@@ -113,7 +115,7 @@ svg.keyboard {
 /* 기능영역 버튼 */
 .octagon-big1, .octagon-big2, .octagon-big3, .octagon-big4, 
 .octagon-big5, .octagon-big6, .octagon-big7, .octagon-big8 {
-  fill: #ededed;   /* 색상 변경   #fafcfa */
+  fill: var(--function-area-color); /* #ededed를 변수로 교체 */
   stroke: #144455;  
   stroke-width: 0.5;
 }
@@ -188,4 +190,68 @@ polygon[data-layer].one-time-caps-on {
     width: 40px;
     height: 40px;
     font-size: 1.2rem;
+}
+
+.rotate-left {
+font-size: 1.5em; / 아이콘 크기 조절 */
+}
+
+.rotate-right {
+font-size: 1.5em; / 아이콘 크기 조절 */
+}
+
+.manual-content {
+    padding: 0 10px; /* 좌우 여백 */
+}
+
+.manual-content h4 {
+    margin-top: 15px;
+    margin-bottom: 5px;
+    text-align: left;
+    color: #333;
+    font-size: 16px;
+}
+
+.manual-content ul {
+    text-align: left;
+    font-size: 13px;
+    color: #555;
+    padding-left: 20px;
+    margin-top: 5px;
+    font-weight: normal; /* 글씨를 보통 굵기로 */
+}
+
+.manual-content li {
+    margin-bottom: 6px;
+}
+
+.color-controls {
+    margin-top: 20px;
+}
+
+.color-controls .control-group {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.color-controls label {
+    font-size: 14px;
+}
+
+.color-controls input[type="color"] {
+    width: 60px;
+    height: 30px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.color-controls button {
+    margin-top: 10px;
+    padding: 8px 16px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    cursor: pointer;
 }

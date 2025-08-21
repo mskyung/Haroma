@@ -11,7 +11,22 @@ class HaromaKeyboard {
         this.keyboardContainer = document.getElementById(options.keyboardContainerId);
         this.layerButtons = document.querySelectorAll(options.layerButtonSelector);
         this.settingsModal = document.getElementById(options.settingsModalId);
+		this.manualModal = document.getElementById(options.manualModalId);
+		this.colorModal = document.getElementById(options.colorModalId); 
+		
+		// 색상 선택기 요소들
+        this.vowelColorPicker = document.getElementById('vowel-color-picker');
+        this.consonantColorPicker = document.getElementById('consonant-color-picker');
+        this.functionColorPicker = document.getElementById('function-color-picker');
+        this.resetColorsBtn = document.getElementById('reset-colors-btn');
 
+        // 기본 색상 값 정의
+        this.defaultColors = {
+            vowel: '#5bd95b',
+            consonant: '#c7fcc7',
+            function: '#ededed'
+        };
+		
         // 한글 조합 규칙 상수
         this.CHOSUNG = ['ㄱ','ㄲ','ㄴ','ㄷ','ㄸ','ㄹ','ㅁ','ㅂ','ㅃ','ㅅ','ㅆ','ㅇ','ㅈ','ㅉ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
         this.JUNGSUNG = ['ㅏ','ㅐ','ㅑ','ㅒ','ㅓ','ㅔ','ㅕ','ㅖ','ㅗ','ㅘ','ㅙ','ㅚ','ㅛ','ㅜ','ㅝ','ㅞ','ㅟ','ㅠ','ㅡ','ㅢ','ㅣ'];
@@ -93,6 +108,7 @@ class HaromaKeyboard {
 	
     init() { 
 		this.loadSettings(); 
+		this.loadColors();
 		this.attachEventListeners();
         this.updateButtonStyles();
 	}
@@ -630,7 +646,8 @@ class HaromaKeyboard {
 				
 		document.querySelectorAll('.copy-btn').forEach(el => el.addEventListener('click', () => this.copyToClipboard()));
 		document.querySelectorAll('.settings-btn').forEach(el => el.addEventListener('click', () => this.openSettings()));
-
+		document.querySelectorAll('.manual-btn').forEach(el => el.addEventListener('click', () => this.openUserManual()));
+		document.querySelectorAll('.color-btn').forEach(el => el.addEventListener('click', () => this.openColorModal()));
 		document.getElementById('scale-up').addEventListener('click', () => this.setScale(this.state.scale + 0.01)); 
 		document.getElementById('scale-down').addEventListener('click', () => this.setScale(this.state.scale - 0.01)); 
 		document.getElementById('hand-left').addEventListener('click', () => this.moveKeyboard(-10)); 
@@ -639,12 +656,30 @@ class HaromaKeyboard {
 		document.getElementById('position-down').addEventListener('click', () => this.moveKeyboardVertical(10)); 
         document.getElementById('rotate-left').addEventListener('click', () => this.rotateKeyboard(-1));
         document.getElementById('rotate-right').addEventListener('click', () => this.rotateKeyboard(1));
-		document.querySelector('.close-button').addEventListener('click', () => this.closeSettings()); 
-
+		document.querySelectorAll('.close-button').forEach(btn => {
+            btn.addEventListener('click', () => {
+                this.closeSettings();
+                this.closeUserManual();
+				this.closeColorModal();
+            });
+        });
 		window.addEventListener('click', (event) => { 
 			if (event.target == this.settingsModal) this.closeSettings(); 
-		}); 
+			if (event.target == this.manualModal) this.closeUserManual();
+			if (event.target == this.colorModal) this.closeColorModal();			
+		});
+		
+		// 색상 선택기 이벤트 리스너 추가
+        this.vowelColorPicker.addEventListener('input', () => this.applyColor('vowel', this.vowelColorPicker.value));
+        this.consonantColorPicker.addEventListener('input', () => this.applyColor('consonant', this.consonantColorPicker.value));
+        this.functionColorPicker.addEventListener('input', () => this.applyColor('function', this.functionColorPicker.value));
 
+        this.vowelColorPicker.addEventListener('change', () => this.saveColors());
+        this.consonantColorPicker.addEventListener('change', () => this.saveColors());
+        this.functionColorPicker.addEventListener('change', () => this.saveColors());
+
+        this.resetColorsBtn.addEventListener('click', () => this.resetColors());
+		
 		this.layerButtons.forEach(btn => {
             const layerName = btn.dataset.layer;
             if (layerName === 'EN') {
@@ -891,6 +926,7 @@ class HaromaKeyboard {
     }
 	
     switchLayer(layerName) {
+		clearTimeout(this.enLayerClickTimer);
 		this.flushPendingTap();
 
 		if (layerName === 'KR') {
@@ -939,6 +975,53 @@ class HaromaKeyboard {
     closeSettings() { 
 		this.settingsModal.style.display = 'none'; 
 	}
+	
+	openUserManual() {
+        this.manualModal.style.display = 'block';
+    }
+
+    closeUserManual() {
+        this.manualModal.style.display = 'none';
+    }
+	
+	openColorModal() {
+        this.colorModal.style.display = 'block';
+    }
+
+    closeColorModal() {
+        this.colorModal.style.display = 'none';
+    }
+
+    applyColor(area, color) {
+        document.documentElement.style.setProperty(`--${area}-area-color`, color);
+    }
+
+    saveColors() {
+        localStorage.setItem('vowelColor', this.vowelColorPicker.value);
+        localStorage.setItem('consonantColor', this.consonantColorPicker.value);
+        localStorage.setItem('functionColor', this.functionColorPicker.value);
+    }
+
+    loadColors() {
+        const savedVowelColor = localStorage.getItem('vowelColor') || this.defaultColors.vowel;
+        const savedConsonantColor = localStorage.getItem('consonantColor') || this.defaultColors.consonant;
+        const savedFunctionColor = localStorage.getItem('functionColor') || this.defaultColors.function;
+
+        this.vowelColorPicker.value = savedVowelColor;
+        this.consonantColorPicker.value = savedConsonantColor;
+        this.functionColorPicker.value = savedFunctionColor;
+
+        this.applyColor('vowel', savedVowelColor);
+        this.applyColor('consonant', savedConsonantColor);
+        this.applyColor('function', savedFunctionColor);
+    }
+
+    resetColors() {
+        localStorage.removeItem('vowelColor');
+        localStorage.removeItem('consonantColor');
+        localStorage.removeItem('functionColor');
+        this.loadColors(); // 기본값으로 다시 로드
+    }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -946,7 +1029,9 @@ document.addEventListener('DOMContentLoaded', () => {
         displayId: 'display',
         displayContainerId: 'display-container',
         keyboardContainerId: 'keyboard-container',
-        layerButtonSelector: '[data-layer]',
-        settingsModalId: 'settings-modal'
+        layerButtonSelector: 'svg.keyboard-shell [data-layer]',
+        settingsModalId: 'settings-modal',
+		manualModalId: 'manual-modal',
+		colorModalId: 'color-modal'
     });
 });
