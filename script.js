@@ -44,6 +44,7 @@ class HaromaKeyboard {
         this.state = {
             lastCharInfo: null, 
 			capsLock: false, 
+            oneTimeCapsLock: false, // <-- 새로운 상태 추가!
 			scale: 1.0, 
             rotation: 0, 
 			activeLayer: 'KR',
@@ -64,12 +65,14 @@ class HaromaKeyboard {
 			},
 			tapState: { 
 				lastTapAt: 0, 
+                lastEnLayerTapAt: 0, // <-- 새로운 상태 추가!
 				longPressFired: false, 
 				centerPressed: false, 
 				centerDragHasExited: false 
 			},
             pendingSingleTap: null
         };
+        this.enLayerClickTimer = null; // 타이머 핸들러 추가
         this.init();
     }
 
@@ -91,7 +94,7 @@ class HaromaKeyboard {
     init() { 
 		this.loadSettings(); 
 		this.attachEventListeners();
-        this.updateButtonStyles(); // <-- 바로 이 부분이야! 시작할 때 버튼 스타일을 업데이트해줘.
+        this.updateButtonStyles();
 	}
 	
     loadSettings() { 
@@ -306,23 +309,31 @@ class HaromaKeyboard {
 
     updateButtonStyles() {
         this.layerButtons.forEach(btn => {
-            btn.classList.remove('active', 'caps-on', 'qwerty-on');
-
-            if (btn.dataset.layer === this.state.activeLayer) {
+            // 모든 관련 클래스를 먼저 제거
+            btn.classList.remove('active', 'caps-on', 'qwerty-on', 'one-time-caps-on');
+    
+            const layer = btn.dataset.layer;
+    
+            // 현재 활성화된 레이어에 'active' 클래스 추가
+            if (layer === this.state.activeLayer) {
                 btn.classList.add('active');
             }
+    
+            // EN 버튼에 대한 특별 스타일링
+            if (layer === 'EN') {
+                if (this.state.capsLock) {
+                    btn.classList.add('caps-on');
+                } else if (this.state.oneTimeCapsLock) {
+                    btn.classList.add('one-time-caps-on');
+                }
+            }
+    
+            // KR 버튼에 대한 QWERTY 출력 모드 스타일링
+            if (layer === 'KR' && this.state.isQwertyOutput) {
+                btn.classList.add('qwerty-on');
+                btn.classList.remove('active'); // QWERTY 모드는 'active' 상태보다 우선
+            }
         });
-
-        const enButton = document.querySelector('[data-layer="EN"]');
-        if (enButton && this.state.capsLock) {
-            enButton.classList.add('caps-on');
-        }
-
-        const krButton = document.querySelector('[data-layer="KR"]');
-        if (krButton && this.state.isQwertyOutput) {
-            krButton.classList.add('qwerty-on');
-            krButton.classList.remove('active');
-        }
     }
 
 	updateSyllable(newVowel) {
@@ -361,19 +372,28 @@ class HaromaKeyboard {
 	}
 
     handleInput(char) {
-    if (typeof char !== 'string' || !char.trim() && char !== ' ') return;
-    const isHangulComponent = this.CHOSUNG.includes(char) || this.JUNGSUNG.includes(char);
-    if (this.state.activeLayer === 'KR' && isHangulComponent) {
-		this.composeHangul(char);
-    } else {
-        this.resetComposition();
-        let charToInsert = char;
-        if (this.state.activeLayer === 'EN' && this.state.capsLock && /^[a-z]$/.test(char)) {
-            charToInsert = char.toUpperCase();
+        if (typeof char !== 'string' || !char.trim() && char !== ' ') return;
+        const isHangulComponent = this.CHOSUNG.includes(char) || this.JUNGSUNG.includes(char);
+        if (this.state.activeLayer === 'KR' && isHangulComponent) {
+            this.composeHangul(char);
+        } else {
+            this.resetComposition();
+            let charToInsert = char;
+            const isLetter = /^[a-z]$/.test(char);
+    
+            if (this.state.activeLayer === 'EN' && isLetter) {
+                if (this.state.capsLock) {
+                    charToInsert = char.toUpperCase();
+                } else if (this.state.oneTimeCapsLock) {
+                    charToInsert = char.toUpperCase();
+                    this.state.oneTimeCapsLock = false; // 사용 후 즉시 비활성화
+                    this.updateButtonStyles(); // UI 업데이트
+                    this.updateEnKeyCaps();    // 키보드 문자 업데이트
+                }
+            }
+            this.insertAtCursor(charToInsert);
         }
-        this.insertAtCursor(charToInsert);
     }
-}
 	
     composeHangul(char) {
 		const last = this.state.lastCharInfo;
@@ -624,8 +644,16 @@ class HaromaKeyboard {
 		window.addEventListener('click', (event) => { 
 			if (event.target == this.settingsModal) this.closeSettings(); 
 		}); 
+
 		this.layerButtons.forEach(btn => {
-            btn.addEventListener('pointerdown', () => this.switchLayer(btn.dataset.layer));
+            const layerName = btn.dataset.layer;
+            if (layerName === 'EN') {
+                // EN 버튼은 특별한 핸들러를 사용
+                btn.addEventListener('pointerdown', () => this.handleEnLayerClick());
+            } else {
+                // 다른 버튼들은 기존 방식대로 작동
+                btn.addEventListener('pointerdown', () => this.switchLayer(layerName));
+            }
         });
 	}
 	
@@ -812,7 +840,7 @@ class HaromaKeyboard {
     }
 	
     updateEnKeyCaps() { 
-		const isCaps = this.state.capsLock; 
+		const isCaps = this.state.capsLock || this.state.oneTimeCapsLock; 
 		const enKeys = document.querySelectorAll('.layer[data-layer="EN"] text'); 
 		enKeys.forEach(key => { 
 			const char = key.textContent; 
@@ -821,12 +849,53 @@ class HaromaKeyboard {
 			} 
 		}); 
 	}
+
+    handleEnLayerClick() {
+        this.flushPendingTap();
+
+        // 현재 EN 레이어가 아니면, EN 레이어로 전환
+        if (this.state.activeLayer !== 'EN') {
+            this.switchLayer('EN');
+            return;
+        }
+
+        const now = Date.now();
+        // 더블 클릭 감지
+        if (now - this.state.tapState.lastEnLayerTapAt <= DOUBLE_TAP_MS) {
+            clearTimeout(this.enLayerClickTimer); // 싱글 클릭 타이머 취소
+            this.state.tapState.lastEnLayerTapAt = 0;
+
+            this.state.capsLock = !this.state.capsLock; // Caps Lock 토글
+            this.state.oneTimeCapsLock = false; // 한 번 대문자 모드는 해제
+        } else {
+            // 싱글 클릭 처리
+            this.state.tapState.lastEnLayerTapAt = now;
+            this.enLayerClickTimer = setTimeout(() => {
+                if (this.state.capsLock) {
+                    // Caps Lock이 켜져있을 때 한 번 클릭하면 모든 대문자 모드 해제
+                    this.state.capsLock = false;
+                    this.state.oneTimeCapsLock = false;
+                } else {
+                    // Caps Lock이 꺼져있을 때 한 번 클릭하면 '한 번 대문자' 모드 토글
+                    this.state.oneTimeCapsLock = !this.state.oneTimeCapsLock;
+                }
+                this.updateButtonStyles();
+                this.updateEnKeyCaps();
+            }, DOUBLE_TAP_MS);
+            return; // 싱글 클릭은 UI 업데이트를 타임아웃 뒤로 미룸
+        }
+
+        // 더블 클릭은 즉시 UI 업데이트
+        this.updateButtonStyles();
+        this.updateEnKeyCaps();
+    }
 	
     switchLayer(layerName) {
 		this.flushPendingTap();
 
 		if (layerName === 'KR') {
 			this.state.capsLock = false; 
+            this.state.oneTimeCapsLock = false;
 			if (this.state.activeLayer === 'KR') {
 				this.state.isQwertyOutput = !this.state.isQwertyOutput;
 			} 
@@ -835,20 +904,19 @@ class HaromaKeyboard {
 				this.state.isQwertyOutput = false;
 			}
 		} 
-		else if (layerName === 'EN') {
+		else if (layerName === 'EN') { // EN 레이어로 전환될 때의 초기 상태 설정
 			this.state.isQwertyOutput = false;
-			if (this.state.activeLayer === 'EN') {
-				this.state.capsLock = !this.state.capsLock;
-			} 
-			else {
-				this.state.activeLayer = 'EN';
-				this.state.capsLock = false;
-			}
+            if (this.state.activeLayer !== 'EN') {
+                this.state.activeLayer = 'EN';
+                this.state.capsLock = false;
+                this.state.oneTimeCapsLock = false;
+            }
 		} 
 		else {
 			this.state.activeLayer = layerName;
 			this.state.isQwertyOutput = false;
 			this.state.capsLock = false;
+            this.state.oneTimeCapsLock = false;
 		}
 
 		this.resetComposition();
@@ -858,7 +926,6 @@ class HaromaKeyboard {
 		});
 
         this.updateButtonStyles();
-
 		this.updateEnKeyCaps();
 		this.state.dragState = { isActive: false, conceptualVowel: null, lastOutput: null, isEnDrag: false, startX: 0, startY: 0, };
 		this.state.tapState.centerPressed = false;

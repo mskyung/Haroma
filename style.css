@@ -129,6 +129,11 @@ polygon[data-layer].qwerty-on {
   fill: #6297e3;   /* Blue color  #4a90e2 */
 }
 
+/* '한 번 대문자' 모드일 때 버튼 색상 (주황색) */
+polygon[data-layer].one-time-caps-on {
+  fill: #f5a623; /* Orange color */
+}
+
 /* Modal styles remain the same */
 .modal {
   display: none;
