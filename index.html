@@ -15,7 +15,7 @@
 <div id="keyboard-container">
     <div class="keyboard-layout-wrapper">
         <svg class="keyboard-shell" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-            <polygon class="octagon-big8 cursor-left" points="16,16 24.5,24.5 35,14 30,2"></polygon>  <!-- 기능버튼은 "octagon-big8 copy-btn" 따옴표 주의 -->
+            <polygon class="octagon-big8 cursor-left" points="16,16 24.5,24.5 35,14 30,2"></polygon>
             <text x="26" y="18" font-size="8" text-anchor="middle" fill="black" pointer-events="none">|⤌</text>
             <polygon class="octagon-big8 refresh-btn" points="24.5,24.5 16,16 2,30 14,35"></polygon>
             <text x="13.5" y="29" font-size="5" text-anchor="middle" fill="black" pointer-events="none">Clear</text>
@@ -23,13 +23,14 @@
             <text x="74" y="18" font-size="8" text-anchor="middle" fill="black" pointer-events="none">⤍|</text>
             <polygon class="octagon-big1 copy-btn" points="84,16 75.5,24.5 86,35 98,30"></polygon>
             <text x="87" y="29" font-size="5" text-anchor="middle" fill="black" pointer-events="none">Copy</text>
-            <polygon class="octagon-big7" points="86,50 86,35 98,30 98,50"></polygon>
-			<text x="92" y="45" font-size="8" text-anchor="middle" fill="black" pointer-events="none"></text>
-            <polygon class="octagon-big7" points="86,65 86,50 98,50 98,70"></polygon>
-            <text x="92" y="61" font-size="8" text-anchor="middle" fill="black" pointer-events="none"></text>
+            <polygon class="octagon-big7 paste-btn" points="86,50 86,35 98,30 98,50"></polygon>
+			<text x="92" y="45" font-size="7" text-anchor="middle" fill="black" pointer-events="none">□</text>
+            <text x="93" y="44" font-size="7" text-anchor="middle" fill="black" pointer-events="none">■</text>
+            <polygon class="octagon-big7 manual-btn" points="86,65 86,50 98,50 98,70"></polygon>
+            <text x="92" y="61" font-size="8" text-anchor="middle" fill="white" pointer-events="none">Ⓜ&#xFE0E;</text>
             <polygon class="octagon-big4" points="84,84 75.5,75.5 86,65 98,70"></polygon>
             <text x="88" y="76" font-size="8" text-anchor="middle" fill="black" pointer-events="none"></text>
-            <polygon class="octagon-big4" data-layer="KR" points="84,84 75.5,75.5 65,86 70,98"></polygon>     <!-- 레이어버튼은 "octagon-big4" data-layer="KR" 따옴표 주의 -->
+            <polygon class="octagon-big4" data-layer="KR" points="84,84 75.5,75.5 65,86 70,98"></polygon>
             <text x="74" y="89" font-size="8" text-anchor="middle" fill="white" pointer-events="none">K</text>
             <polygon class="octagon-big5" data-layer="SYM" points="35,86 50,86 50,98 30,98"></polygon>
             <text x="42" y="95" font-size="8" text-anchor="middle" fill="white" pointer-events="none">S</text>
@@ -37,8 +38,8 @@
             <text x="58" y="95" font-size="8" text-anchor="middle" fill="white" pointer-events="none">E</text>
             <polygon class="octagon-big2" data-layer="NUM" points="24.5,75.5 35,86 30,98 16,84"></polygon>
 			<text x="26" y="88" font-size="8" text-anchor="middle" fill="white" pointer-events="none">N</text>
-            <polygon class="octagon-big2 manual-btn" points="14,65 24.5,75.5 16,84 2,70"></polygon>
-			<text x="14.5" y="77" font-size="8" text-anchor="middle" fill="white" pointer-events="none">Ⓜ&#xFE0E;</text>
+            <polygon class="octagon-big2" points="14,65 24.5,75.5 16,84 2,70"></polygon>
+			<text x="14.5" y="77" font-size="8" text-anchor="middle" fill="white" pointer-events="none"></text>
             <polygon class="octagon-big3 color-btn" points="14,50 14,65 2,70 2,50"></polygon>
             <text x="8" y="61" font-size="8" text-anchor="middle" fill="white" pointer-events="none">Ⓒ</text>
             <polygon class="octagon-big3 settings-btn" points="14,35 14,50 2,50 2,30"></polygon>
@@ -54,18 +55,18 @@
                 <svg class="keyboard" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                     <polygon class="octagon-small1" data-click="ㄱ" data-dblclick="ㄲ" data-drag="ㅋ" points="67,43 57,33 65,14 86,35"></polygon>
                     <text x="69" y="36" font-size="13" text-anchor="middle" fill="black" pointer-events="none">ㄱ</text>
-                    <text x="67" y="40" font-size="5" text-anchor="middle" fill="blue" pointer-events="none">ㄲ</text>
-                    <text x="62" y="36" font-size="5" text-anchor="middle" fill="#6e6d6d" pointer-events="none">ㅋ</text>
+                    <text x="67" y="25" font-size="5" text-anchor="middle" fill="red" pointer-events="none">ㄲ</text>
+                    <text x="65" y="38" font-size="5" text-anchor="middle" fill="#6e6d6d" pointer-events="none">ㅋ</text>
                     <polygon class="octagon-small2" data-click="ㄴ" data-dblclick="ㄹ" data-drag="ㄹ" points="33,57 43,67 35,86 14,65"></polygon>
                     <text x="31" y="75" font-size="13" text-anchor="middle" fill="black" pointer-events="none">ㄴ</text>
                     <text x="35" y="67" font-size="5" text-anchor="middle" fill="#6e6d6d" pointer-events="none">ㄹ</text>
                     <polygon class="octagon-small3" data-click="ㄷ" data-dblclick="ㄸ" data-drag="ㅌ" points="33,43 33,57 14,65 14,35"></polygon>
                     <text x="22" y="55" font-size="13" text-anchor="middle" fill="black" pointer-events="none">ㄷ</text>
-                    <text x="30" y="56" font-size="5" text-anchor="middle" fill="blue" pointer-events="none">ㄸ</text>
-                    <text x="30" y="49" font-size="5" text-anchor="middle" fill="#6e6d6d" pointer-events="none">ㅌ</text>
+                    <text x="20" y="45" font-size="5" text-anchor="middle" fill="red" pointer-events="none">ㄸ</text>
+                    <text x="30" y="52" font-size="5" text-anchor="middle" fill="#6e6d6d" pointer-events="none">ㅌ</text>
                     <polygon class="octagon-small4" data-click="ㅁ" data-dblclick="ㅍ" data-drag="ㅍ" points="57,67 67,57 86,65 65,86"></polygon>
-                    <text x="70" y="75" font-size="13" text-anchor="middle" fill="black" pointer-events="none">ㅁ</text>
-                    <text x="65" y="67" font-size="5" text-anchor="middle" fill="#6e6d6d" pointer-events="none">ㅍ</text>
+                    <text x="70" y="76" font-size="13" text-anchor="middle" fill="black" pointer-events="none">ㅁ</text>
+                    <text x="64" y="67" font-size="5" text-anchor="middle" fill="#6e6d6d" pointer-events="none">ㅍ</text>
                     <polygon class="octagon-small5" data-click="ㅂ" data-dblclick="ㅃ" data-drag="ㅃ" points="43,67 57,67 65,86 35,86"></polygon>
                     <text x="50" y="84" font-size="13" text-anchor="middle" fill="black" pointer-events="none">ㅂ</text>
                     <text x="50" y="73" font-size="5" text-anchor="middle" fill="gray" pointer-events="none">ㅃ</text>
@@ -77,13 +78,9 @@
                     <text x="71" y="53" font-size="5" text-anchor="middle" fill="#6e6d6d" pointer-events="none">ㅎ</text>
                     <polygon class="octagon-small8" data-click="ㅈ" data-dblclick="ㅉ" data-drag="ㅊ" points="43,33 33,43 14,35 35,14"></polygon>
                     <text x="30" y="35" font-size="13" text-anchor="middle" fill="black" pointer-events="none">ㅈ</text>
-                    <text x="33" y="40" font-size="5" text-anchor="middle" fill="blue" pointer-events="none">ㅉ</text>
-                    <text x="38" y="35" font-size="5" text-anchor="middle" fill="#6e6d6d" pointer-events="none">ㅊ</text>
+                    <text x="33" y="25" font-size="5" text-anchor="middle" fill="red" pointer-events="none">ㅉ</text>
+                    <text x="36" y="38" font-size="5" text-anchor="middle" fill="#6e6d6d" pointer-events="none">ㅊ</text>
                     <polygon class="octagon-center" data-click="" data-dblclick="" data-drag="" points="43,33 57,33 67,43 67,57 57,67 43,67 33,57 33,43"></polygon>
-                    <text x="50" y="38" font-size="5" text-anchor="middle" fill="#dee0de" pointer-events="none"></text>
-                    <text x="50" y="67" font-size="5" text-anchor="middle" fill="#dee0de" pointer-events="none"></text>
-                    <text x="35" y="53" font-size="5" text-anchor="middle" fill="#dee0de" pointer-events="none"></text>
-                    <text x="65" y="53" font-size="5" text-anchor="middle" fill="#dee0de" pointer-events="none"></text>
                     <text x="43" y="51" font-size="8" text-anchor="middle" fill="#fcfcfc" pointer-events="none">␣</text>
                     <text x="49" y="52" font-size="8" text-anchor="middle" fill="#fcfcfc" pointer-events="none">.</text>
                     <text x="53" y="52" font-size="8" text-anchor="middle" fill="#fcfcfc" pointer-events="none">,</text>
@@ -92,34 +89,34 @@
             </div>
             <div class="layer" data-layer="EN">
                 <svg class="keyboard" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                    <polygon class="octagon-small1" data-click="g" data-dblclick="k" data-drag="q" points="67,43 57,33 65,14 86,35"></polygon>
-                    <text x="71.5" y="33" font-size="12" text-anchor="middle" fill="black" pointer-events="none">g</text>
-                    <text x="63" y="35" font-size="6" text-anchor="middle" fill="blue" pointer-events="none">k</text>
-                    <text x="67" y="39" font-size="6" text-anchor="middle" fill="black" pointer-events="none">q</text>
-                    <polygon class="octagon-small2" data-click="n" data-dblclick="l" data-drag="r" points="33,57 43,67 35,86 14,65"></polygon>
-                    <text x="30" y="74" font-size="12" text-anchor="middle" fill="black" pointer-events="none">n</text>
-                    <text x="33" y="64" font-size="6" text-anchor="middle" fill="blue" pointer-events="none">l</text>
-                    <text x="38" y="69" font-size="6" text-anchor="middle" fill="black" pointer-events="none">r</text>
+                    <polygon class="octagon-small1" data-click="g" data-dblclick="q" data-drag="k" points="67,43 57,33 65,14 86,35"></polygon>
+                    <text x="71.5" y="34" font-size="12" text-anchor="middle" fill="black" pointer-events="none">g</text>
+                    <text x="65" y="38" font-size="6" text-anchor="middle" fill="black" pointer-events="none">k</text>
+                    <text x="66" y="25" font-size="6" text-anchor="middle" fill="red" pointer-events="none">q</text>
+                    <polygon class="octagon-small2" data-click="n" data-dblclick="r" data-drag="l" points="33,57 43,67 35,86 14,65"></polygon>
+                    <text x="29" y="75" font-size="12" text-anchor="middle" fill="black" pointer-events="none">n</text>
+                    <text x="36" y="67" font-size="6" text-anchor="middle" fill="black" pointer-events="none">l</text>
+                    <text x="34" y="81" font-size="6" text-anchor="middle" fill="red" pointer-events="none">r</text>
                     <polygon class="octagon-small3" data-click="d" data-dblclick="t" data-drag="t" points="33,43 33,57 14,65 14,35"></polygon>
                     <text x="21" y="54" font-size="12" text-anchor="middle" fill="black" pointer-events="none">d</text>
                     <text x="28" y="52" font-size="6" text-anchor="middle" fill="black" pointer-events="none">t</text>
-                    <polygon class="octagon-small4" data-click="m" data-dblclick="p" data-drag="f" points="57,67 67,57 86,65 65,86"></polygon>
+                    <polygon class="octagon-small4" data-click="m" data-dblclick="f" data-drag="p" points="57,67 67,57 86,65 65,86"></polygon>
                     <text x="70" y="75" font-size="12" text-anchor="middle" fill="black" pointer-events="none">m</text>
-                    <text x="67" y="65" font-size="6" text-anchor="middle" fill="blue" pointer-events="none">p</text>
-                    <text x="63" y="70" font-size="6" text-anchor="middle" fill="black" pointer-events="none">f</text>
+                    <text x="65" y="66" font-size="6" text-anchor="middle" fill="black" pointer-events="none">p</text>
+                    <text x="66" y="81" font-size="6" text-anchor="middle" fill="red" pointer-events="none">f</text>
                     <polygon class="octagon-small5" data-click="b" data-dblclick="v" data-drag="v" points="43,67 57,67 65,86 35,86"></polygon>
                     <text x="50" y="83" font-size="12" text-anchor="middle" fill="black" pointer-events="none">b</text>
                     <text x="50" y="73" font-size="6" text-anchor="middle" fill="black" pointer-events="none">v</text>
-                    <polygon class="octagon-small6" data-click="s" data-dblclick="c" data-drag="x" points="35,14 65,14 57,33 43,33"></polygon>
+                    <polygon class="octagon-small6" data-click="s" data-dblclick="x" data-drag="x" points="35,14 65,14 57,33 43,33"></polygon>
                     <text x="50" y="25" font-size="12" text-anchor="middle" fill="black" pointer-events="none">s</text>
-                    <text x="47" y="31" font-size="6" text-anchor="middle" fill="blue" pointer-events="none">c</text>
-                    <text x="53" y="31" font-size="6" text-anchor="middle" fill="black" pointer-events="none">x</text>
+                    <text x="50" y="31" font-size="6" text-anchor="middle" fill="black" pointer-events="none">x</text>                    
                     <polygon class="octagon-small7" data-click="h" data-dblclick="w" data-drag="w" points="67,57 67,43 86,35 86,65"></polygon>
                     <text x="80" y="54" font-size="12" text-anchor="middle" fill="black" pointer-events="none">h</text>
                     <text x="72" y="52" font-size="6" text-anchor="middle" fill="black" pointer-events="none">w</text>
-                    <polygon class="octagon-small8" data-click="j" data-dblclick="z" data-drag="z" points="43,33 33,43 14,35 35,14"></polygon>
-                    <text x="29" y="32" font-size="12" text-anchor="middle" fill="black" pointer-events="none">j</text>
-                    <text x="35" y="37" font-size="6" text-anchor="middle" fill="black" pointer-events="none">z</text>
+                    <polygon class="octagon-small8" data-click="j" data-dblclick="z" data-drag="c" points="43,33 33,43 14,35 35,14"></polygon>
+                    <text x="28" y="34" font-size="12" text-anchor="middle" fill="black" pointer-events="none">j</text>
+                    <text x="35" y="37" font-size="6" text-anchor="middle" fill="black" pointer-events="none">c</text>
+					<text x="34" y="25" font-size="6" text-anchor="middle" fill="red" pointer-events="none">z</text>
                     <polygon class="octagon-center" data-click="" data-dblclick="" data-drag="" points="43,33 57,33 67,43 67,57 57,67 43,67 33,57 33,43"></polygon>
                     <text x="50" y="39" font-size="6" text-anchor="middle" fill="gray" pointer-events="none">o</text>
                     <text x="50" y="66" font-size="6" text-anchor="middle" fill="gray" pointer-events="none">u</text>
@@ -214,23 +211,15 @@
         <span class="close-button">&times;</span>
         <h3>Keyboard Setting</h3>
         <div class="settings-controls">
-            <div class="control-group">
-                <label>Size</label>
-                <button id="scale-down">-</button>
-                <button id="scale-up">+</button>
-            </div>
-            <div class="control-group">
-                <label>Left-Right</label>
+            <div class="control-group">                
                 <button id="hand-left">←</button>
                 <button id="hand-right">→</button>
+				<button id="scale-down">-</button>
+                <button id="scale-up">+</button>
             </div>
-            <div class="control-group">
-                <label>Up-Down</label>
+            <div class="control-group">				
 				<button id="position-down">↓</button>
                 <button id="position-up">↑</button>
-            </div>
-			<div class="control-group">
-                <label>RotateR-RotateL</label>
 				<button id="rotate-left">↺</button>
                 <button id="rotate-right">↻</button>
             </div>

@@ -645,6 +645,7 @@ class HaromaKeyboard {
         });
 				
 		document.querySelectorAll('.copy-btn').forEach(el => el.addEventListener('click', () => this.copyToClipboard()));
+		document.querySelectorAll('.paste-btn').forEach(el => el.addEventListener('click', () => this.pasteFromClipboard()));
 		document.querySelectorAll('.settings-btn').forEach(el => el.addEventListener('click', () => this.openSettings()));
 		document.querySelectorAll('.manual-btn').forEach(el => el.addEventListener('click', () => this.openUserManual()));
 		document.querySelectorAll('.color-btn').forEach(el => el.addEventListener('click', () => this.openColorModal()));
@@ -794,6 +795,19 @@ class HaromaKeyboard {
 			else alert('복사 실패: 수동으로 복사해주세요.'); 
 		}); 
 	}
+	
+	pasteFromClipboard() {
+		navigator.clipboard?.readText()
+		.then(text => {
+			if (text) {
+				this.insertAtCursor(text);
+			}
+		})
+		.catch(err => {
+			console.error('클립보드 읽기 실패:', err);
+			alert('붙여넣기 실패: 브라우저가 이 기능을 지원하지 않거나 권한이 없습니다.');
+		});
+	}	
 	
 	deleteNextChar() { 
 		const start = this.display.selectionStart; 
